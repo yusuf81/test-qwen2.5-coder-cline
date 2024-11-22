@@ -1,20 +1,36 @@
 import random
 import sys
 
+# Constants for board positions
+TOP_LEFT = 0
+TOP_CENTER = 1
+TOP_RIGHT = 2
+MIDDLE_LEFT = 3
+CENTER = 4
+MIDDLE_RIGHT = 5
+BOTTOM_LEFT = 6
+BOTTOM_CENTER = 7
+BOTTOM_RIGHT = 8
+
 def print_board(board):
     """Prints the current state of the board."""
-    print(f"{board[0]} | {board[1]} | {board[2]}")
+    print(f"{board[TOP_LEFT]} | {board[TOP_CENTER]} | {board[TOP_RIGHT]}")
     print("---------")
-    print(f"{board[3]} | {board[4]} | {board[5]}")
+    print(f"{board[MIDDLE_LEFT]} | {board[CENTER]} | {board[MIDDLE_RIGHT]}")
     print("---------")
-    print(f"{board[6]} | {board[7]} | {board[8]}")
+    print(f"{board[BOTTOM_LEFT]} | {board[BOTTOM_CENTER]} | {board[BOTTOM_RIGHT]}")
 
 def check_winner(board, player):
     """Checks if the given player has won."""
     win_conditions = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
-        [0, 4, 8], [2, 4, 6]             # Diagonals
+        [TOP_LEFT, TOP_CENTER, TOP_RIGHT],  # Top row
+        [MIDDLE_LEFT, CENTER, MIDDLE_RIGHT],  # Middle row
+        [BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT],  # Bottom row
+        [TOP_LEFT, MIDDLE_LEFT, BOTTOM_LEFT],  # Left column
+        [TOP_CENTER, CENTER, BOTTOM_CENTER],  # Center column
+        [TOP_RIGHT, MIDDLE_RIGHT, BOTTOM_RIGHT],  # Right column
+        [TOP_LEFT, CENTER, BOTTOM_RIGHT],  # Diagonal from top-left to bottom-right
+        [TOP_RIGHT, CENTER, BOTTOM_LEFT]  # Diagonal from top-right to bottom-left
     ]
     for condition in win_conditions:
         if all(board[i] == player for i in condition):
@@ -29,13 +45,17 @@ def get_player_move(board):
     """Gets a valid move from the player using zero-based indexing internally."""
     while True:
         try:
-            move = int(input("Enter your move (1-9): ")) - 1
-            if 0 <= move < 9 and board[move] == ' ':
-                return move
+            move = input("Enter your move (1-9): ").strip()
+            if move.isdigit() and 1 <= int(move) <= 9:
+                move = int(move) - 1
+                if board[move] == ' ':
+                    return move
+                else:
+                    print(f"Position {move + 1} is already taken. Try again.")
             else:
-                print("Invalid move. Try again.")
+                print("Invalid input. Please enter a number between 1 and 9.")
         except ValueError:
-            print("Please enter a number between 1 and 9.")
+            print("Please enter a valid number.")
 
 def get_strategic_move(board, player):
     """Gets a strategic move for the computer to block opponent or win."""
@@ -58,16 +78,16 @@ def get_strategic_move(board, player):
                 return i
     
     # Choose a random corner or center if available
-    corners = [0, 2, 6, 8]
+    corners = [TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT]
     for corner in corners:
         if board[corner] == ' ':
             return corner
     
-    if board[4] == ' ':
-        return 4
+    if board[CENTER] == ' ':
+        return CENTER
     
     # Choose any remaining edge
-    edges = [1, 3, 5, 7]
+    edges = [TOP_CENTER, MIDDLE_LEFT, MIDDLE_RIGHT, BOTTOM_CENTER]
     for edge in edges:
         if board[edge] == ' ':
             return edge
@@ -82,17 +102,26 @@ def get_computer_move(board, strategy):
     else:
         raise ValueError("Invalid strategy. Choose 'random' or 'strategic'.")
 
-def main():
+def switch_player(current_player):
+    """Switches the current player."""
+    return 'O' if current_player == 'X' else 'X'
+
+def initialize_game():
+    """Initializes the game by setting up the board and choosing a starting player."""
     board = [' '] * 9
     current_player = random.choice(['X', 'O'])  # Randomly choose starting player
-    
+    return board, current_player
+
+def get_strategy():
+    """Gets the strategy from command line arguments."""
     if len(sys.argv) != 2:
         print("Usage: python tic-tac-toe.py [strategy]")
         print("Strategy options: random, strategic")
         sys.exit(1)
-    
-    strategy = sys.argv[1]
-    
+    return sys.argv[1]
+
+def play_game(board, current_player, strategy):
+    """Plays the game loop."""
     while True:
         print_board(board)
         print(f"Current player: {current_player}")
@@ -106,7 +135,7 @@ def main():
         print(f"Move made by {current_player} at position {move + 1}")
         
         # Debug print to check player switching
-        print(f"Switching from {current_player} to {'O' if current_player == 'X' else 'X'}")
+        print(f"Switching from {current_player} to {switch_player(current_player)}")
         
         if check_winner(board, current_player):
             print_board(board)
@@ -117,10 +146,12 @@ def main():
             print("It's a draw!")
             break
         
-        if current_player == 'X':
-            current_player = 'O'
-        else:
-            current_player = 'X'
+        current_player = switch_player(current_player)
+
+def main():
+    strategy = get_strategy()
+    board, current_player = initialize_game()
+    play_game(board, current_player, strategy)
 
 if __name__ == "__main__":
     main()
