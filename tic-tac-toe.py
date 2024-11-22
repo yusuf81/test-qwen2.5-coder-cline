@@ -92,6 +92,51 @@ def get_strategic_move(board, player):
         if board[edge] == ' ':
             return edge
 
+def minimax(board, depth, is_maximizing):
+    """Implements the minimax algorithm to find the best move."""
+    if check_winner(board, 'O'):
+        return 1
+    if check_winner(board, 'X'):
+        return -1
+    if check_draw(board):
+        return 0
+    
+    if is_maximizing:
+        best_score = -float('inf')
+        for i in range(9):
+            if board[i] == ' ':
+                board_copy = board[:]
+                board_copy[i] = 'O'
+                score = minimax(board_copy, depth + 1, False)
+                board_copy[i] = ' '
+                best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = float('inf')
+        for i in range(9):
+            if board[i] == ' ':
+                board_copy = board[:]
+                board_copy[i] = 'X'
+                score = minimax(board_copy, depth + 1, True)
+                board_copy[i] = ' '
+                best_score = min(score, best_score)
+        return best_score
+
+def get_minimax_move(board):
+    """Gets the move for the computer using the minimax algorithm."""
+    best_score = -float('inf')
+    best_move = None
+    for i in range(9):
+        if board[i] == ' ':
+            board_copy = board[:]
+            board_copy[i] = 'O'
+            score = minimax(board_copy, 0, False)
+            board_copy[i] = ' '
+            if score > best_score:
+                best_score = score
+                best_move = i
+    return best_move
+
 def get_computer_move(board, strategy):
     """Gets a move for the computer based on the chosen strategy."""
     if strategy == 'random':
@@ -99,8 +144,10 @@ def get_computer_move(board, strategy):
         return random.choice(available_moves)
     elif strategy == 'strategic':
         return get_strategic_move(board, 'O')
+    elif strategy == 'minimax':
+        return get_minimax_move(board)
     else:
-        raise ValueError("Invalid strategy. Choose 'random' or 'strategic'.")
+        raise ValueError("Invalid strategy. Choose 'random', 'strategic', or 'minimax'.")
 
 def switch_player(current_player):
     """Switches the current player."""
@@ -116,7 +163,7 @@ def get_strategy():
     """Gets the strategy from command line arguments."""
     if len(sys.argv) != 2:
         print("Usage: python tic-tac-toe.py [strategy]")
-        print("Strategy options: random, strategic")
+        print("Strategy options: random, strategic, minimax")
         sys.exit(1)
     return sys.argv[1]
 
