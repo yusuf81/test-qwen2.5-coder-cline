@@ -1,4 +1,5 @@
 import random
+import sys
 
 def print_board(board):
     """Prints the current state of the board."""
@@ -36,14 +37,61 @@ def get_player_move(board):
         except ValueError:
             print("Please enter a number between 1 and 9.")
 
-def get_computer_move(board):
-    """Gets a random valid move for the computer."""
-    available_moves = [i for i, x in enumerate(board) if x == ' ']
-    return random.choice(available_moves)
+def get_strategic_move(board, player):
+    """Gets a strategic move for the computer to block opponent or win."""
+    opponent = 'O' if player == 'X' else 'X'
+    
+    # Check for winning moves
+    for i in range(9):
+        if board[i] == ' ':
+            board_copy = board[:]
+            board_copy[i] = player
+            if check_winner(board_copy, player):
+                return i
+    
+    # Block opponent's winning move
+    for i in range(9):
+        if board[i] == ' ':
+            board_copy = board[:]
+            board_copy[i] = opponent
+            if check_winner(board_copy, opponent):
+                return i
+    
+    # Choose a random corner or center if available
+    corners = [0, 2, 6, 8]
+    for corner in corners:
+        if board[corner] == ' ':
+            return corner
+    
+    if board[4] == ' ':
+        return 4
+    
+    # Choose any remaining edge
+    edges = [1, 3, 5, 7]
+    for edge in edges:
+        if board[edge] == ' ':
+            return edge
+
+def get_computer_move(board, strategy):
+    """Gets a move for the computer based on the chosen strategy."""
+    if strategy == 'random':
+        available_moves = [i for i, x in enumerate(board) if x == ' ']
+        return random.choice(available_moves)
+    elif strategy == 'strategic':
+        return get_strategic_move(board, 'O')
+    else:
+        raise ValueError("Invalid strategy. Choose 'random' or 'strategic'.")
 
 def main():
     board = [' '] * 9
     current_player = random.choice(['X', 'O'])  # Randomly choose starting player
+    
+    if len(sys.argv) != 2:
+        print("Usage: python tic-tac-toe.py [strategy]")
+        print("Strategy options: random, strategic")
+        sys.exit(1)
+    
+    strategy = sys.argv[1]
     
     while True:
         print_board(board)
@@ -52,7 +100,7 @@ def main():
         if current_player == 'X':
             move = get_player_move(board)
         else:
-            move = get_computer_move(board)
+            move = get_computer_move(board, strategy)
         
         board[move] = current_player
         print(f"Move made by {current_player} at position {move + 1}")
