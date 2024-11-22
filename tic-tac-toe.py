@@ -43,7 +43,7 @@ def get_computer_move(board):
 
 def main():
     board = [' '] * 9
-    current_player = 'X'
+    current_player = random.choice(['X', 'O'])  # Randomly choose starting player
     
     while True:
         print_board(board)
