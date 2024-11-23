@@ -90,14 +90,23 @@ def get_strategic_move(board, player, size):
         if board[edge] == ' ':
             return edge
 
-def minimax(board, depth, is_maximizing, player, opponent, size):
-    """Implements the minimax algorithm to find the best move."""
+def evaluate(board, player, opponent, size):
+    """Evaluates the board state."""
     if check_winner(board, player, size):
-        return 1
-    if check_winner(board, opponent, size):
-        return -1
-    if check_draw(board):
+        return 10
+    elif check_winner(board, opponent, size):
+        return -10
+    else:
         return 0
+
+def minimax(board, depth, is_maximizing, player, opponent, size, alpha, beta, max_depth):
+    """Implements the minimax algorithm with alpha-beta pruning and depth limiting."""
+    if check_winner(board, player, size):
+        return 10
+    if check_winner(board, opponent, size):
+        return -10
+    if check_draw(board) or depth == max_depth:
+        return evaluate(board, player, opponent, size)
     
     if is_maximizing:
         best_score = -float('inf')
@@ -105,9 +114,12 @@ def minimax(board, depth, is_maximizing, player, opponent, size):
             if board[i] == ' ':
                 board_copy = board[:]
                 board_copy[i] = player
-                score = minimax(board_copy, depth + 1, False, player, opponent, size)
+                score = minimax(board_copy, depth + 1, False, player, opponent, size, alpha, beta, max_depth)
                 board_copy[i] = ' '
                 best_score = max(score, best_score)
+                alpha = max(alpha, score)
+                if beta <= alpha:
+                    break
         return best_score
     else:
         best_score = float('inf')
@@ -115,21 +127,27 @@ def minimax(board, depth, is_maximizing, player, opponent, size):
             if board[i] == ' ':
                 board_copy = board[:]
                 board_copy[i] = opponent
-                score = minimax(board_copy, depth + 1, True, player, opponent, size)
+                score = minimax(board_copy, depth + 1, True, player, opponent, size, alpha, beta, max_depth)
                 board_copy[i] = ' '
                 best_score = min(score, best_score)
+                beta = min(beta, score)
+                if beta <= alpha:
+                    break
         return best_score
 
 def get_minimax_move(board, player, size):
-    """Gets the move for the computer using the minimax algorithm."""
+    """Gets the move for the computer using the minimax algorithm with alpha-beta pruning and depth limiting."""
     opponent = 'O' if player == 'X' else 'X'
     best_score = -float('inf')
     best_move = None
+    alpha = -float('inf')
+    beta = float('inf')
+    max_depth = 3  # Set a reasonable maximum depth for larger boards
     for i in range(size * size):
         if board[i] == ' ':
             board_copy = board[:]
             board_copy[i] = player
-            score = minimax(board_copy, 0, False, player, opponent, size)
+            score = minimax(board_copy, 0, False, player, opponent, size, alpha, beta, max_depth)
             board_copy[i] = ' '
             if score > best_score:
                 best_score = score
