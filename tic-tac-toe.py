@@ -138,6 +138,34 @@ def get_minimax_move(board):
                 best_move = i
     return best_move
 
+def get_worst_move(board):
+    """Gets the worst move for the computer to ensure a loss."""
+    opponent = 'X'
+    
+    # Prioritize moves that are part of potential win conditions for the opponent
+    win_conditions = [
+        [BoardPosition.TOP_LEFT.value, BoardPosition.TOP_CENTER.value, BoardPosition.TOP_RIGHT.value],  # Top row
+        [BoardPosition.MIDDLE_LEFT.value, BoardPosition.CENTER.value, BoardPosition.MIDDLE_RIGHT.value],  # Middle row
+        [BoardPosition.BOTTOM_LEFT.value, BoardPosition.BOTTOM_CENTER.value, BoardPosition.BOTTOM_RIGHT.value],  # Bottom row
+        [BoardPosition.TOP_LEFT.value, BoardPosition.MIDDLE_LEFT.value, BoardPosition.BOTTOM_LEFT.value],  # Left column
+        [BoardPosition.TOP_CENTER.value, BoardPosition.CENTER.value, BoardPosition.BOTTOM_CENTER.value],  # Center column
+        [BoardPosition.TOP_RIGHT.value, BoardPosition.MIDDLE_RIGHT.value, BoardPosition.BOTTOM_RIGHT.value],  # Right column
+        [BoardPosition.TOP_LEFT.value, BoardPosition.CENTER.value, BoardPosition.BOTTOM_RIGHT.value],  # Diagonal from top-left to bottom-right
+        [BoardPosition.TOP_RIGHT.value, BoardPosition.CENTER.value, BoardPosition.BOTTOM_LEFT.value]  # Diagonal from top-right to bottom-left
+    ]
+    
+    for condition in win_conditions:
+        if board[condition[0]] == opponent and board[condition[1]] == opponent and board[condition[2]] == ' ':
+            return condition[2]
+        elif board[condition[0]] == opponent and board[condition[2]] == opponent and board[condition[1]] == ' ':
+            return condition[1]
+        elif board[condition[1]] == opponent and board[condition[2]] == opponent and board[condition[0]] == ' ':
+            return condition[0]
+    
+    # If no such move exists, choose a random available move
+    available_moves = [i for i, x in enumerate(board) if x == ' ']
+    return random.choice(available_moves)
+
 def get_computer_move(board, strategy):
     """Gets a move for the computer based on the chosen strategy."""
     if strategy == 'random':
@@ -147,8 +175,10 @@ def get_computer_move(board, strategy):
         return get_strategic_move(board, 'O')
     elif strategy == 'minimax':
         return get_minimax_move(board)
+    elif strategy == 'worst':
+        return get_worst_move(board)
     else:
-        raise ValueError("Invalid strategy. Choose 'random', 'strategic', or 'minimax'.")
+        raise ValueError("Invalid strategy. Choose 'random', 'strategic', 'minimax', or 'worst'.")
 
 def switch_player(current_player):
     """Switches the current player."""
@@ -164,7 +194,7 @@ def get_strategy():
     """Gets the strategy from command line arguments."""
     if len(sys.argv) != 2:
         print("Usage: python tic-tac-toe.py [strategy]")
-        print("Strategy options: random, strategic, minimax")
+        print("Strategy options: random, strategic, minimax, worst")
         sys.exit(1)
     return sys.argv[1]
 
