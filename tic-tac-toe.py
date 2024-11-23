@@ -1,36 +1,37 @@
 import random
 import sys
+from enum import Enum
 
-# Constants for board positions
-TOP_LEFT = 0
-TOP_CENTER = 1
-TOP_RIGHT = 2
-MIDDLE_LEFT = 3
-CENTER = 4
-MIDDLE_RIGHT = 5
-BOTTOM_LEFT = 6
-BOTTOM_CENTER = 7
-BOTTOM_RIGHT = 8
+class BoardPosition(Enum):
+    TOP_LEFT = 0
+    TOP_CENTER = 1
+    TOP_RIGHT = 2
+    MIDDLE_LEFT = 3
+    CENTER = 4
+    MIDDLE_RIGHT = 5
+    BOTTOM_LEFT = 6
+    BOTTOM_CENTER = 7
+    BOTTOM_RIGHT = 8
 
 def print_board(board):
     """Prints the current state of the board."""
-    print(f"{board[TOP_LEFT]} | {board[TOP_CENTER]} | {board[TOP_RIGHT]}")
+    print(f"{board[BoardPosition.TOP_LEFT.value]} | {board[BoardPosition.TOP_CENTER.value]} | {board[BoardPosition.TOP_RIGHT.value]}")
     print("---------")
-    print(f"{board[MIDDLE_LEFT]} | {board[CENTER]} | {board[MIDDLE_RIGHT]}")
+    print(f"{board[BoardPosition.MIDDLE_LEFT.value]} | {board[BoardPosition.CENTER.value]} | {board[BoardPosition.MIDDLE_RIGHT.value]}")
     print("---------")
-    print(f"{board[BOTTOM_LEFT]} | {board[BOTTOM_CENTER]} | {board[BOTTOM_RIGHT]}")
+    print(f"{board[BoardPosition.BOTTOM_LEFT.value]} | {board[BoardPosition.BOTTOM_CENTER.value]} | {board[BoardPosition.BOTTOM_RIGHT.value]}")
 
 def check_winner(board, player):
     """Checks if the given player has won."""
     win_conditions = [
-        [TOP_LEFT, TOP_CENTER, TOP_RIGHT],  # Top row
-        [MIDDLE_LEFT, CENTER, MIDDLE_RIGHT],  # Middle row
-        [BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT],  # Bottom row
-        [TOP_LEFT, MIDDLE_LEFT, BOTTOM_LEFT],  # Left column
-        [TOP_CENTER, CENTER, BOTTOM_CENTER],  # Center column
-        [TOP_RIGHT, MIDDLE_RIGHT, BOTTOM_RIGHT],  # Right column
-        [TOP_LEFT, CENTER, BOTTOM_RIGHT],  # Diagonal from top-left to bottom-right
-        [TOP_RIGHT, CENTER, BOTTOM_LEFT]  # Diagonal from top-right to bottom-left
+        [BoardPosition.TOP_LEFT.value, BoardPosition.TOP_CENTER.value, BoardPosition.TOP_RIGHT.value],  # Top row
+        [BoardPosition.MIDDLE_LEFT.value, BoardPosition.CENTER.value, BoardPosition.MIDDLE_RIGHT.value],  # Middle row
+        [BoardPosition.BOTTOM_LEFT.value, BoardPosition.BOTTOM_CENTER.value, BoardPosition.BOTTOM_RIGHT.value],  # Bottom row
+        [BoardPosition.TOP_LEFT.value, BoardPosition.MIDDLE_LEFT.value, BoardPosition.BOTTOM_LEFT.value],  # Left column
+        [BoardPosition.TOP_CENTER.value, BoardPosition.CENTER.value, BoardPosition.BOTTOM_CENTER.value],  # Center column
+        [BoardPosition.TOP_RIGHT.value, BoardPosition.MIDDLE_RIGHT.value, BoardPosition.BOTTOM_RIGHT.value],  # Right column
+        [BoardPosition.TOP_LEFT.value, BoardPosition.CENTER.value, BoardPosition.BOTTOM_RIGHT.value],  # Diagonal from top-left to bottom-right
+        [BoardPosition.TOP_RIGHT.value, BoardPosition.CENTER.value, BoardPosition.BOTTOM_LEFT.value]  # Diagonal from top-right to bottom-left
     ]
     for condition in win_conditions:
         if all(board[i] == player for i in condition):
@@ -78,16 +79,16 @@ def get_strategic_move(board, player):
                 return i
     
     # Choose a random corner or center if available
-    corners = [TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT]
+    corners = [BoardPosition.TOP_LEFT.value, BoardPosition.TOP_RIGHT.value, BoardPosition.BOTTOM_LEFT.value, BoardPosition.BOTTOM_RIGHT.value]
     for corner in corners:
         if board[corner] == ' ':
             return corner
     
-    if board[CENTER] == ' ':
-        return CENTER
+    if board[BoardPosition.CENTER.value] == ' ':
+        return BoardPosition.CENTER.value
     
     # Choose any remaining edge
-    edges = [TOP_CENTER, MIDDLE_LEFT, MIDDLE_RIGHT, BOTTOM_CENTER]
+    edges = [BoardPosition.TOP_CENTER.value, BoardPosition.MIDDLE_LEFT.value, BoardPosition.MIDDLE_RIGHT.value, BoardPosition.BOTTOM_CENTER.value]
     for edge in edges:
         if board[edge] == ' ':
             return edge
@@ -171,18 +172,8 @@ def play_game(board, current_player, strategy):
     """Plays the game loop."""
     while True:
         print_board(board)
-        print(f"Current player: {current_player}")
-        
-        if current_player == 'X':
-            move = get_player_move(board)
-        else:
-            move = get_computer_move(board, strategy)
-        
-        board[move] = current_player
-        print(f"Move made by {current_player} at position {move + 1}")
-        
-        # Debug print to check player switching
-        print(f"Switching from {current_player} to {switch_player(current_player)}")
+        move = get_move(current_player, board, strategy)
+        update_board(board, move, current_player)
         
         if check_winner(board, current_player):
             print_board(board)
@@ -194,6 +185,18 @@ def play_game(board, current_player, strategy):
             break
         
         current_player = switch_player(current_player)
+
+def get_move(player, board, strategy):
+    """Gets the move for the current player."""
+    if player == 'X':
+        return get_player_move(board)
+    else:
+        return get_computer_move(board, strategy)
+
+def update_board(board, move, player):
+    """Updates the board with the player's move."""
+    board[move] = player
+    print(f"Move made by {player} at position {move + 1}")
 
 def main():
     strategy = get_strategy()
