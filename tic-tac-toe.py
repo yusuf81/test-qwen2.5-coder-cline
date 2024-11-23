@@ -142,7 +142,7 @@ def get_worst_move(board):
     """Gets the worst move for the computer to ensure a loss."""
     opponent = 'X'
     
-    # Prioritize moves that are part of potential win conditions for the opponent
+    # Avoid moves that are part of potential win conditions for the opponent
     win_conditions = [
         [BoardPosition.TOP_LEFT.value, BoardPosition.TOP_CENTER.value, BoardPosition.TOP_RIGHT.value],  # Top row
         [BoardPosition.MIDDLE_LEFT.value, BoardPosition.CENTER.value, BoardPosition.MIDDLE_RIGHT.value],  # Middle row
@@ -154,17 +154,29 @@ def get_worst_move(board):
         [BoardPosition.TOP_RIGHT.value, BoardPosition.CENTER.value, BoardPosition.BOTTOM_LEFT.value]  # Diagonal from top-right to bottom-left
     ]
     
-    for condition in win_conditions:
-        if board[condition[0]] == opponent and board[condition[1]] == opponent and board[condition[2]] == ' ':
-            return condition[2]
-        elif board[condition[0]] == opponent and board[condition[2]] == opponent and board[condition[1]] == ' ':
-            return condition[1]
-        elif board[condition[1]] == opponent and board[condition[2]] == opponent and board[condition[0]] == ' ':
-            return condition[0]
-    
-    # If no such move exists, choose a random available move
     available_moves = [i for i, x in enumerate(board) if x == ' ']
-    return random.choice(available_moves)
+    worst_moves = []
+    
+    for move in available_moves:
+        is_worst = True
+        for condition in win_conditions:
+            if board[condition[0]] == opponent and board[condition[1]] == opponent and move == condition[2]:
+                is_worst = False
+                break
+            elif board[condition[0]] == opponent and board[condition[2]] == opponent and move == condition[1]:
+                is_worst = False
+                break
+            elif board[condition[1]] == opponent and board[condition[2]] == opponent and move == condition[0]:
+                is_worst = False
+                break
+        if is_worst:
+            worst_moves.append(move)
+    
+    if worst_moves:
+        return random.choice(worst_moves)
+    else:
+        # If no such move exists, choose a random available move
+        return random.choice(available_moves)
 
 def get_computer_move(board, strategy):
     """Gets a move for the computer based on the chosen strategy."""
