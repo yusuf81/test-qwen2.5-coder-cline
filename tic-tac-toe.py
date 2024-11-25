@@ -11,23 +11,12 @@ def print_board(board, size):
 
 def check_winner(board, player, size):
     """Checks if the given player has won."""
-    # Check rows
-    for i in range(size):
-        if all(board[i * size + j] == player for j in range(size)):
-            return True
-    
-    # Check columns
-    for j in range(size):
-        if all(board[i * size + j] == player for i in range(size)):
-            return True
-    
-    # Check diagonals
-    if all(board[i * size + i] == player for i in range(size)):
-        return True
-    if all(board[i * size + (size - 1 - i)] == player for i in range(size)):
-        return True
-    
-    return False
+    return (
+        any(all(board[i * size + j] == player for j in range(size)) for i in range(size)) or
+        any(all(board[i * size + j] == player for i in range(size)) for j in range(size)) or
+        all(board[i * size + i] == player for i in range(size)) or
+        all(board[i * size + (size - 1 - i)] == player for i in range(size))
+    )
 
 def check_draw(board):
     """Checks if the game is a draw."""
@@ -100,7 +89,13 @@ def evaluate(board, player, opponent, size):
         return 0
 
 def minimax(board, depth, is_maximizing, player, opponent, size, alpha, beta, max_depth):
-    """Implements the minimax algorithm with alpha-beta pruning and depth limiting."""
+    """
+    Implements the minimax algorithm with alpha-beta pruning and depth limiting.
+    
+    This function recursively evaluates all possible moves to determine the best move for the current player.
+    It uses alpha-beta pruning to reduce the number of nodes evaluated in the game tree, improving efficiency.
+    The `max_depth` parameter limits the search depth to prevent excessive computation time on larger boards.
+    """
     if check_winner(board, player, size):
         return 10
     if check_winner(board, opponent, size):
@@ -205,7 +200,15 @@ def initialize_game(size):
     return board, current_player
 
 def get_strategy_and_size():
-    """Gets the strategy and board size from command line arguments."""
+    """
+    Gets the strategy and board size from command line arguments.
+    
+    Validates that exactly two arguments are provided:
+    - The first argument is the strategy (random, strategic, minimax, worst).
+    - The second argument is the board size (an integer >= 3).
+    
+    If validation fails, prints an error message and exits the program.
+    """
     if len(sys.argv) != 3:
         print("Usage: python tic-tac-toe.py [strategy] [size]")
         print("Strategy options: random, strategic, minimax, worst")
