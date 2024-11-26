@@ -1,2 +1,2 @@
 [run]
-omit = tests,.vscode,.conda
+omit = *tests*,*.vscode*,*.conda*
