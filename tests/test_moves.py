@@ -102,31 +102,35 @@ def test_play_game(monkeypatch):
     size = 3
     strategy = "random"
 
-    # Completely mock all potentially problematic functions
-    def mock_print_board(board, size):
-        return  # Do nothing
-
-    def mock_check_winner(board, player, size):
-        # Simulate winning condition for the test
-        if player == "X":
-            return len(set(board[4:7])) == 1 and board[4] == "X"
-        return False
-
-    def mock_check_draw(board):
-        # Simulate draw condition
-        return " " not in board
-
-    # Mock all potentially blocking functions
-    monkeypatch.setattr("board.print_board", mock_print_board)
-    monkeypatch.setattr("board.check_winner", mock_check_winner)
-    monkeypatch.setattr("board.check_draw", mock_check_draw)
+    # Mock all print-related functions to do nothing
     monkeypatch.setattr("builtins.print", lambda *args, **kwargs: None)
 
-    # Mock get_move to simulate a win for player 'X'
+    # Mock print_board to do nothing
+    def mock_print_board(board, size):
+        return
+
+    monkeypatch.setattr("board.print_board", mock_print_board)
+
+    # Mock check_winner to simulate a win condition
+    def mock_check_winner(board, player, size):
+        # Simulate a win for 'X' when center and adjacent cells are filled
+        if player == "X":
+            return board[4] == "X" and board[3] == "X" and board[5] == "X"
+        return False
+
+    monkeypatch.setattr("board.check_winner", mock_check_winner)
+
+    # Mock check_draw to simulate a draw
+    def mock_check_draw(board):
+        return " " not in board
+
+    monkeypatch.setattr("board.check_draw", mock_check_draw)
+
+    # Win scenario
     def mock_get_move_win(player, board, strategy, size):
         win_moves = {
-            "X": [4, 0, 8],  # Diagonal win moves for 'X'
-            "O": [1, 7, 3],  # Blocking or random moves
+            "X": [4, 3, 5],  # Center and adjacent moves for 'X'
+            "O": [1, 7, 0],  # Other moves
         }
         return win_moves[player].pop(0)
 
@@ -137,9 +141,11 @@ def test_play_game(monkeypatch):
     play_game(board, current_player, strategy, size)
 
     # Verify win condition
-    assert board[4] == "X"  # Specific win condition for this test
-    
-    # Test draw scenario
+    assert board[4] == "X"
+    assert board[3] == "X"
+    assert board[5] == "X"
+
+    # Draw scenario
     def mock_get_move_draw(player, board, strategy, size):
         draw_moves = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         return draw_moves.pop(0)
