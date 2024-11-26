@@ -86,8 +86,11 @@ def test_play_game(monkeypatch):
     size = 3
     strategy = "random"
 
-    # Mock print_board to prevent actual printing
-    monkeypatch.setattr('board.print_board', lambda board, size: None)
+    # Completely mock print_board to do nothing
+    def mock_print_board(board, size):
+        pass
+
+    monkeypatch.setattr('board.print_board', mock_print_board)
 
     # Mock get_move to simulate a win for player 'X'
     def mock_get_move_win(player, board, strategy, size):
@@ -104,12 +107,7 @@ def test_play_game(monkeypatch):
 
     board, current_player = initialize_game(size)
     
-    # Wrap play_game in a try-except to handle potential infinite loops
-    try:
-        play_game(board, current_player, strategy, size)
-    except Exception as e:
-        # If play_game exits normally, this will not be reached
-        pytest.fail(f"play_game raised an unexpected exception: {e}")
+    play_game(board, current_player, strategy, size)
 
     # Check if the game ends with a win for player 'X'
     assert check_winner(board, "X", size) is True
@@ -123,10 +121,7 @@ def test_play_game(monkeypatch):
 
     board, current_player = initialize_game(size)
     
-    try:
-        play_game(board, current_player, strategy, size)
-    except Exception as e:
-        pytest.fail(f"play_game raised an unexpected exception: {e}")
+    play_game(board, current_player, strategy, size)
 
     # Check if the game ends in a draw
     assert check_winner(board, "X", size) is False
