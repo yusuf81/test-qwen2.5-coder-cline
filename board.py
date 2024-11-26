@@ -2,10 +2,9 @@ def print_board(board, size):
     """Prints the current state of the board."""
     for i in range(size):
         row = " | ".join(board[i * size : (i + 1) * size])
-        print(row)
+        print(row.rstrip())  # Tambahkan rstrip() untuk menghapus spasi ekstra di akhir
         if i < size - 1:
-            print("-" * (size * 4 - 3))
-
+            print("-" * (size * 4 - 3))  # Pastikan separator konsisten
 
 def check_winner(board, player, size):
     """Checks if the given player has won."""
