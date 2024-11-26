@@ -1,2 +1,7 @@
 [run]
-omit = *tests*,*.vscode*,*.conda*
+branch = True
+source = .
+omit = tests/*,.conda/*
+
+[report]
+omit = tests/*,.conda/*
