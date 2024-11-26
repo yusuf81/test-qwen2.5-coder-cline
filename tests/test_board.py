@@ -67,6 +67,19 @@ def test_board_size_4x4():
 
 def test_board_size_5x5():
     """Menguji fungsi dengan board ukuran 5x5"""
-    board_5x5 = [" "] * 25
-    board_5x5[0] = board_5x5[6] = board_5x5[12] = board_5x5[18] = board_5x5[24] = "O"
-    assert check_winner(board_5x5, "O", 5) == True
+    # Diagonal win
+    board_5x5_diagonal = [" "] * 25
+    board_5x5_diagonal[0] = board_5x5_diagonal[6] = board_5x5_diagonal[12] = board_5x5_diagonal[18] = board_5x5_diagonal[24] = "O"
+    assert check_winner(board_5x5_diagonal, "O", 5) == True
+
+    # Horizontal win
+    board_5x5_horizontal = [" "] * 25
+    for i in range(5):
+        board_5x5_horizontal[i] = "X"
+    assert check_winner(board_5x5_horizontal, "X", 5) == True
+
+    # Vertical win
+    board_5x5_vertical = [" "] * 25
+    for i in range(0, 25, 5):
+        board_5x5_vertical[i] = "O"
+    assert check_winner(board_5x5_vertical, "O", 5) == True
