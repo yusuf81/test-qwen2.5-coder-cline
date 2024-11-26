@@ -82,34 +82,51 @@ def test_update_board():
     assert board[move] == player
 
 def test_play_game(monkeypatch):
-    """Test the play_game function with mocked moves."""
+    """Test the play_game function with mocked moves and print statements."""
     size = 3
     strategy = "random"
 
-    # Mock get_move to simulate a win for player 'X'
-    def mock_get_move(player, board, strategy, size):
-        if player == "X":
-            return 4  # Center move
-        else:
-            return 1  # Top middle move
+    # Mock print_board to prevent actual printing
+    monkeypatch.setattr('board.print_board', lambda board, size: None)
 
-    monkeypatch.setattr('moves.get_move', mock_get_move)
+    # Mock get_move to simulate a win for player 'X'
+    def mock_get_move_win(player, board, strategy, size):
+        win_moves = {
+            "X": [4, 0, 8],  # Diagonal win moves for 'X'
+            "O": [1, 7, 3]   # Blocking or random moves
+        }
+        return win_moves[player].pop(0)
+
+    monkeypatch.setattr('moves.get_move', mock_get_move_win)
+
+    # Mock print to prevent output during test
+    monkeypatch.setattr('builtins.print', lambda *args, **kwargs: None)
 
     board, current_player = initialize_game(size)
-    play_game(board, current_player, strategy, size)
+    
+    # Wrap play_game in a try-except to handle potential infinite loops
+    try:
+        play_game(board, current_player, strategy, size)
+    except Exception as e:
+        # If play_game exits normally, this will not be reached
+        pytest.fail(f"play_game raised an unexpected exception: {e}")
 
     # Check if the game ends with a win for player 'X'
     assert check_winner(board, "X", size) is True
 
-    # Mock get_move to simulate a draw
+    # Reset for draw scenario
     def mock_get_move_draw(player, board, strategy, size):
-        moves = iter([0, 1, 2, 3, 4, 5, 6, 7, 8])
-        return next(moves)
+        draw_moves = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        return draw_moves.pop(0)
 
     monkeypatch.setattr('moves.get_move', mock_get_move_draw)
 
     board, current_player = initialize_game(size)
-    play_game(board, current_player, strategy, size)
+    
+    try:
+        play_game(board, current_player, strategy, size)
+    except Exception as e:
+        pytest.fail(f"play_game raised an unexpected exception: {e}")
 
     # Check if the game ends in a draw
     assert check_winner(board, "X", size) is False
