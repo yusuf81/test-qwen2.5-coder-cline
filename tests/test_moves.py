@@ -4,7 +4,8 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import pytest
-from moves import switch_player, initialize_game, get_player_move, get_computer_move, get_move, update_board
+from moves import switch_player, initialize_game, get_player_move, get_computer_move, get_move, update_board, play_game
+from board import print_board, check_winner, check_draw
 
 def test_switch_player():
     assert switch_player("X") == "O"
@@ -79,3 +80,37 @@ def test_update_board():
     player = "O"
     update_board(board, move, player)
     assert board[move] == player
+
+def test_play_game(monkeypatch):
+    """Test the play_game function with mocked moves."""
+    size = 3
+    strategy = "random"
+
+    # Mock get_move to simulate a win for player 'X'
+    def mock_get_move(player, board, strategy, size):
+        if player == "X":
+            return 4  # Center move
+        else:
+            return 1  # Top middle move
+
+    monkeypatch.setattr('moves.get_move', mock_get_move)
+
+    board, current_player = initialize_game(size)
+    play_game(board, current_player, strategy, size)
+
+    # Check if the game ends with a win for player 'X'
+    assert check_winner(board, "X", size) is True
+
+    # Mock get_move to simulate a draw
+    def mock_get_move_draw(player, board, strategy, size):
+        moves = iter([0, 1, 2, 3, 4, 5, 6, 7, 8])
+        return next(moves)
+
+    monkeypatch.setattr('moves.get_move', mock_get_move_draw)
+
+    board, current_player = initialize_game(size)
+    play_game(board, current_player, strategy, size)
+
+    # Check if the game ends in a draw
+    assert check_winner(board, "X", size) is False
+    assert check_draw(board) is True
