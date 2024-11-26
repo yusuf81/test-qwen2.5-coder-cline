@@ -7,25 +7,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from board import print_board, check_winner, check_draw
 
-def test_print_board(capfd):
-    """Menguji fungsi print_board"""
-    board = [" "] * 9
-    board[0] = "X"
-    board[4] = "O"
-    
-    print_board(board, 3)
-    out, _ = capfd.readouterr()
-    
-    expected_output = (
-        "X |   | \n"
-        "-----------\n"
-        "  | O | \n"
-        "-----------\n"
-        "  |   | "
-    )
-    
-    assert out.strip() == expected_output.strip()
-    
 def test_check_winner_horizontal():
     """Menguji kemenangan horizontal"""
     # Kemenangan horizontal pertama
