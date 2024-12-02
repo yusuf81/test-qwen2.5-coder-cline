@@ -95,3 +95,51 @@ def test_update_board():
     player = "O"
     update_board(board, move, player)
     assert board[move] == player
+
+
+def test_play_game(monkeypatch, capsys):
+    # Test winning scenario
+    win_moves = {
+        "X": [0, 1, 2],  # X wins with top row
+        "O": [3, 4]      # O's moves don't matter
+    }
+    
+    def mock_get_move_win(player, board, strategy, size):
+        if win_moves[player]:
+            return win_moves[player].pop(0)
+        return 0  # Default move if list is empty
+    
+    monkeypatch.setattr("moves.get_move", mock_get_move_win)
+    monkeypatch.setattr("board.print_board", lambda *args: None)  # Suppress board printing
+    
+    board = [" "] * 9
+    current_player = "X"
+    strategy = "random"
+    size = 3
+    
+    play_game(board, current_player, strategy, size)
+    captured = capsys.readouterr()
+    assert "Player X wins!" in captured.out
+    assert board[:3] == ["X", "X", "X"]  # Verify winning condition
+    
+    # Test draw scenario
+    draw_moves = {
+        "X": [0, 2, 3, 7],     # X moves
+        "O": [1, 4, 5, 6, 8]   # O moves
+    }
+    
+    def mock_get_move_draw(player, board, strategy, size):
+        if draw_moves[player]:
+            return draw_moves[player].pop(0)
+        return 0  # Default move if list is empty
+    
+    monkeypatch.setattr("moves.get_move", mock_get_move_draw)
+    
+    board = [" "] * 9
+    current_player = "X"
+    
+    play_game(board, current_player, strategy, size)
+    captured = capsys.readouterr()
+    assert "It's a draw!" in captured.out
+    # Verify final board state for draw
+    assert " " not in board  # All positions filled
