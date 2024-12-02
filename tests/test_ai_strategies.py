@@ -21,7 +21,7 @@ def test_get_minimax_move():
 
 def test_get_worst_move():
     # Test getting the worst move for the computer
-    board = ["X", "O", " ", "X", "O", " ", " ", " ", " "]  # Corrected spacing and commas
+    board = ["X", "O", " ", "X", "O", " ", " ", " ", " "]
     player = "X"
     size = 3
     assert get_worst_move(board, player, size) in [2, 6, 8]

@@ -143,25 +143,35 @@ def get_minimax_move(board, player, size):
 def get_worst_move(board, player, size):
     """Gets the worst move for the computer to ensure a loss."""
     opponent = "O" if player == "X" else "X"
-
-    # Avoid moves that are part of potential win conditions for the opponent
     available_moves = [i for i, x in enumerate(board) if x == " "]
-    worst_moves = []
-
+    
+    # First, avoid any moves that would result in an immediate win
+    non_winning_moves = []
     for move in available_moves:
-        is_worst = True
-        for i in range(size * size):
-            if board[i] == opponent and board[move] == " ":
-                board_copy = board[:]
-                board_copy[move] = player
-                if check_winner(board_copy, opponent, size):
-                    is_worst = False
+        board_copy = board[:]
+        board_copy[move] = player
+        if not check_winner(board_copy, player, size):
+            non_winning_moves.append(move)
+    
+    if not non_winning_moves:
+        return random.choice(available_moves)
+    
+    # Among non-winning moves, prefer moves that allow opponent to win next turn
+    worst_moves = []
+    for move in non_winning_moves:
+        board_copy = board[:]
+        board_copy[move] = player
+        # Check if opponent can win in their next move
+        for opp_move in range(size * size):
+            if board_copy[opp_move] == " ":
+                board_copy_2 = board_copy[:]
+                board_copy_2[opp_move] = opponent
+                if check_winner(board_copy_2, opponent, size):
+                    worst_moves.append(move)
                     break
-        if is_worst:
-            worst_moves.append(move)
-
+    
     if worst_moves:
         return random.choice(worst_moves)
-    else:
-        # If no such move exists, choose a random available move
-        return random.choice(available_moves)
+    
+    # If no moves lead to opponent win, choose any non-winning move
+    return random.choice(non_winning_moves)

@@ -23,7 +23,13 @@ def get_strategy_and_size():
         print("Usage: python main.py [strategy] [size]")
         print("Strategy options: random, strategic, minimax, worst")
         sys.exit(1)
+    
     strategy = sys.argv[1]
+    valid_strategies = ['random', 'strategic', 'minimax', 'worst']
+    if strategy not in valid_strategies:
+        print(f"Invalid strategy. Please choose from: {', '.join(valid_strategies)}")
+        sys.exit(1)
+        
     try:
         size = int(sys.argv[2])
         if size < 3:
